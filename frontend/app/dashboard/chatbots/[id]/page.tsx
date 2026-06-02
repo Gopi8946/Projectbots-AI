@@ -53,6 +53,7 @@ interface Chatbot {
   api_key: string;
   widget_settings: Record<string, any> | null;
   voice_settings: Record<string, any> | null;
+  allowed_domains: string[] | null;
   message_count: number;
   max_messages: number;
 }
