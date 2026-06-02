@@ -1,19 +1,29 @@
+# Environment files - NEVER commit these
+backend/.env
+backend/.env.*
+frontend/.env.local
+frontend/.env.*
+.env
+.env.*
+
 # Python
 backend/venv/
 backend/__pycache__/
-backend/.env
 backend/uploads/
 backend/chroma_data/
-backend/*.pyc
+**/__pycache__/
+*.pyc
+*.pyo
 
 # Node
 frontend/node_modules/
 frontend/.next/
-frontend/.env.local
+frontend/out/
 
-# Docker data
+# Docker
 postgres_data/
 
 # OS
 .DS_Store
 Thumbs.db
+*.log
