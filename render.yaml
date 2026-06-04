@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: projectbots-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  - type: web
+    name: projectbots-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+
+databases:
+  - name: projectbots-db
+    plan: free
+    databaseName: projectbots_db
+    user: projectbots_user

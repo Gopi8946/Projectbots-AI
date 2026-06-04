@@ -42,3 +42,15 @@ html {
   -webkit-backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.8);
 }
+
+/* Make dashboard cards glassy */
+.bg-white {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Override for pure white where needed (like chat bubbles) */
+.bg-white-solid {
+  background-color: rgb(255, 255, 255) !important;
+}

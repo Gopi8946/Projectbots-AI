@@ -130,27 +130,6 @@ export default function DashboardHome() {
           </div>
         </div>
       </div>
-
-      {/* Current Plan */}
-      <div className="mt-6 bg-linear-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-indigo-200 text-sm font-medium">Current Plan</p>
-            <p className="text-2xl font-bold mt-1 capitalize">{user?.plan || 'Free'} Plan</p>
-            <p className="text-indigo-100 text-sm mt-1">
-              {user?.plan === 'free'
-                ? '50 messages/month • 1 chatbot • 1 data source'
-                : 'Upgrade to unlock more features'}
-            </p>
-          </div>
-          <Link
-            href="/pricing"
-            className="px-5 py-2.5 bg-white text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition-colors"
-          >
-            Upgrade Plan
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }

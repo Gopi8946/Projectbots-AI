@@ -25,8 +25,8 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -34,9 +34,8 @@ export default function DashboardLayout({
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Sidebar />
-      {/* Offset for sidebar — responsive */}
       <main className="lg:ml-64 min-h-screen">
         <div className="p-4 lg:p-8">{children}</div>
       </main>

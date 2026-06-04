@@ -47,10 +47,24 @@ END_KEYWORDS = [
 ]
 
 HUMAN_KEYWORDS = [
+    # Direct human requests
     "speak to someone", "talk to someone", "talk to a person",
     "speak to a person", "real person", "human agent",
     "representative", "operator", "manager", "speak to a human",
-    "talk to a human", "connect me to", "transfer me"
+    "talk to a human", "connect me", "transfer me",
+    # Transfer phrases
+    "transfer", "transfer the call", "transfer my call", "transfer this call",
+    "transfer me to", "can you transfer", "please transfer",
+    # Connect phrases
+    "connect me to", "connect me with", "put me through",
+    "put me on with", "get me", "i want to speak",
+    "i need to speak", "i would like to speak",
+    # Staff requests
+    "staff", "employee", "supervisor", "owner",
+    "someone else", "another person",
+    # Help escalation
+    "live agent", "live person", "actual person",
+    "real human", "actual human"
 ]
 
 SPEED_MAP = {"slow": 0.85, "normal": 1.0, "fast": 1.15, "x-fast": 1.3}
@@ -81,24 +95,27 @@ def _voice_settings(chatbot: Chatbot) -> dict:
 
 def _check_keywords(text: str) -> str:
     """
-    Check if customer said goodbye or wants a human.
-    Strips punctuation and checks both original and cleaned text.
+    Detect if customer wants to end call or transfer to human.
+    Uses word-boundary matching to avoid false positives.
     """
     import re
+    
     lower = text.lower().strip()
-    # Remove punctuation for cleaner matching
+    # Clean punctuation
     clean = re.sub(r'[^\w\s]', ' ', lower)
-
+    
+    # Check end keywords FIRST (so "bye" doesn't get caught as anything else)
     for kw in END_KEYWORDS:
         if kw in lower or kw in clean:
             print(f"  ✋ End keyword matched: '{kw}'")
             return "end"
-
+    
+    # Then check human transfer keywords
     for kw in HUMAN_KEYWORDS:
         if kw in lower or kw in clean:
             print(f"  🤝 Human keyword matched: '{kw}'")
             return "human"
-
+    
     return "continue"
 
 
@@ -150,11 +167,10 @@ async def _speak(text: str, vs: dict, base_url: str) -> str:
 
 async def _speak_greeting(text: str, vs: dict, base_url: str) -> str:
     """
-    High quality speech for greeting only.
-    Uses ElevenLabs cloned voice for the first impression.
-    Falls back to Polly if ElevenLabs fails.
+    Speech for greeting — uses Deepgram for consistent voice throughout call.
+    Falls back to Polly only if Deepgram fails.
     """
-    return await _speak(text, vs, base_url)
+    return await _speak_fast(text, vs, base_url)
 
 
 async def _speak_fast(text: str, vs: dict, base_url: str) -> str:
@@ -357,35 +373,43 @@ async def handle_respond(
 
         # ── STEP 4: Handle HUMAN TRANSFER ─────────────
         if kw == "human":
-            print(f"📞 Human transfer requested")
-            hold = "Absolutely! Let me connect you with our team right away. One moment please."
-            db.add(Message(conversation_id=conv.id, role="assistant", content=hold))
+            handoff_number = vs.get("handoff_number", "").strip()
+            hold_text = "Absolutely! Let me connect you with our team right away. One moment please."
+            db.add(Message(conversation_id=conv.id, role="assistant", content=hold_text))
             db.commit()
 
-            speak_el = await _speak_fast(hold, vs, base_url)
-            num = vs.get("handoff_number", "")
+            if not handoff_number:
+                print("⚠️ Human transfer requested but NO handoff number configured")
+                sorry = "I apologize, but no one is available to take your call right now. Please try calling back during business hours. Goodbye!"
+                sorry_el = await _speak_fast(sorry, vs, base_url)
+                return Response(
+                    content=f'<?xml version="1.0" encoding="UTF-8"?>'
+                            f'<Response>{sorry_el}<Hangup/></Response>',
+                    media_type="text/xml"
+                )
 
-            if num:
-                return Response(
-                    content=f'<?xml version="1.0" encoding="UTF-8"?>'
-                            f'<Response>'
-                            f'{speak_el}'
-                            f'<Dial>{num}</Dial>'
-                            f'</Response>',
-                    media_type="text/xml"
-                )
-            else:
-                sorry_text = "Sorry, no one is available right now. Please try again during business hours. Goodbye!"
-                sorry_el = await _speak(sorry_text, vs, base_url)
-                return Response(
-                    content=f'<?xml version="1.0" encoding="UTF-8"?>'
-                            f'<Response>'
-                            f'{speak_el}'
-                            f'{sorry_el}'
-                            f'<Hangup/>'
-                            f'</Response>',
-                    media_type="text/xml"
-                )
+            # Auto-format phone number
+            if not handoff_number.startswith("+"):
+                import re
+                clean_num = re.sub(r'[\s\-\(\)]', '', handoff_number)
+                if clean_num.isdigit():
+                    handoff_number = "+" + clean_num
+
+            print(f"📞 Transferring call to: {handoff_number}")
+
+            hold_el = await _speak_fast(hold_text, vs, base_url)
+
+            twiml = f'''<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    {hold_el}
+    <Dial timeout="20">
+        <Number>{handoff_number}</Number>
+    </Dial>
+    <Say voice="Polly.Joanna">Sorry, our team is not available right now. Please try calling back later. Goodbye!</Say>
+    <Hangup/>
+</Response>'''
+
+            return Response(content=twiml, media_type="text/xml")
 
         # ── STEP 5: Normal — RAG pipeline ─────────────
         msgs = db.query(Message).filter(
