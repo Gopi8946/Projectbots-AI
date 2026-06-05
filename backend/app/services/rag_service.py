@@ -98,7 +98,7 @@ async def get_rag_response(
     relevant_chunks = search_similar(
         chatbot_id=str(chatbot_id),
         query_embedding=query_embedding,
-        n_results=5
+        n_results=3
     )
 
     # STEP 3: Build the system prompt with retrieved context
