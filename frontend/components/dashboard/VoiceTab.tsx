@@ -235,27 +235,37 @@ export default function VoiceTab({ chatbot, onUpdate }: Props) {
       </div>
 
       {/* Setup Guide */}
+            {/* Setup Guide */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
           <Settings className="w-5 h-5 text-gray-400" />
-          Setup (4 Steps)
+          Quick Setup
         </h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Connect your business phone number so your AI bot can answer calls automatically.
+        </p>
         <ol className="space-y-3 text-sm text-gray-600">
           <li className="flex gap-3">
             <span className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
-            <span>Get a Twilio phone number at <a href="https://twilio.com" target="_blank" className="text-indigo-600 hover:underline">twilio.com</a></span>
+            <span>
+              Sign up at{' '}
+              <a href="https://twilio.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">
+                twilio.com
+              </a>
+              {' '}and buy a phone number (~$1/month)
+            </span>
           </li>
           <li className="flex gap-3">
             <span className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
-            <span>Run <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">ngrok http 8000</code> and copy the https URL</span>
+            <span>Configure your voice settings below (voice, greeting, handoff number)</span>
           </li>
           <li className="flex gap-3">
             <span className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</span>
-            <span>Paste ngrok URL below and save settings</span>
+            <span>Copy the webhook URL shown below and paste it into your Twilio phone number settings under &quot;A call comes in&quot;</span>
           </li>
           <li className="flex gap-3">
-            <span className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">4</span>
-            <span>Copy webhook URL → paste in Twilio phone number config → call your number</span>
+            <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+            <span className="font-medium text-gray-700">Call your Twilio number — your AI bot will answer!</span>
           </li>
         </ol>
       </div>
@@ -267,15 +277,18 @@ export default function VoiceTab({ chatbot, onUpdate }: Props) {
           Webhook
         </h3>
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ngrok / Server URL</label>
+                    <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Server URL</label>
             <input
               type="text"
               value={form.webhook_base_url}
               onChange={(e) => setForm({ ...form, webhook_base_url: e.target.value })}
-              placeholder="https://a1b2c3d4.ngrok-free.app"
+              placeholder="https://your-backend-url.com"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
             />
+            <p className="text-xs text-gray-400 mt-1">
+              Already set up for you — leave as is unless you need to change it
+            </p>
           </div>
           {webhookUrl && (
             <div>
